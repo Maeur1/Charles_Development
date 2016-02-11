@@ -5,6 +5,20 @@
 ////////////////////////////////////////////////////////////
 
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <math.h>
+#include <linux/types.h>
+#include <linux/spi/spidev.h>
+#include <wiringPi.h>
+#include <time.h>
 
 #ifndef L6470_h
 #define L6470_h

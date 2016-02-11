@@ -1,17 +1,3 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <math.h>
-#include <linux/types.h>
-#include <linux/spi/spidev.h>
-#include <wiringPi.h>
-#include <time.h>
 #include "L6470.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -30,10 +16,9 @@ static const char *device = "/dev/spidev0.0";
 static uint8_t bits = 8;
 static uint32_t speed = 5000000;
 
-int current_driver;
+int current_driver = 0;
 
 void init(){
-    current_driver = 0;
     wiringPiSetup();
     pinMode(0, OUTPUT);
     pinMode(2, OUTPUT);
@@ -87,13 +72,10 @@ void init(){
 
 	// First things first: let's check communications. The CONFIG register should
 	//  power up to 0x2E88, so we can use that to check the communications.
-    printf("Status = %x\n", GetParam(CONFIG));
 	if (GetParam(CONFIG) != 0x2E88){
-		printf("Comm issue\n");
+		printf("Stepper Motors not Initialized\n");
+		printf("Is 12-36V power connected?\n");
 	}
-
-    move(10000);
-    printf("Status = %x\n", GetParam(CONFIG));
 }
 
 bool isBusy(){
@@ -694,8 +676,4 @@ unsigned long ParamHandler(uint8_t param, unsigned long value){
 	    break;
 	}
 	return ret_val;
-}
-
-int main(){
-    init();
 }
