@@ -17,6 +17,7 @@ static void pabort(const char *s)
 	abort();
 }
 
+static uint8_t mode;
 static int fd;
 static const char *device = "/dev/spidev0.0";
 static uint8_t bits = 8;
@@ -24,15 +25,60 @@ static uint32_t speed = 500000;
 static uint16_t delay;
 
 void init(){
+	int ret = 0;
 	fd = open(device, O_RDWR);
+    mode |= SPI_MODE_3;
+
+	/*
+	 * spi mode
+	 */
+	ret = ioctl(fd, SPI_IOC_WR_MODE, &mode);
+	if (ret == -1)
+		pabort("can't set spi mode");
+
+	ret = ioctl(fd, SPI_IOC_RD_MODE, &mode);
+	if (ret == -1)
+		pabort("can't get spi mode");
+    
+	/*
+	 * bits per word
+	 */
+	ret = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits);
+	if (ret == -1)
+		pabort("can't set bits per word");
+
+	ret = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits);
+	if (ret == -1)
+		pabort("can't get bits per word");
+    
+	/*
+	 * max speed hz
+	 */
+	ret = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+	if (ret == -1)
+		pabort("can't set max speed hz");
+
+	ret = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
+	if (ret == -1)
+		pabort("can't get max speed hz");
+
+	// First things first: let's check communications. The CONFIG register should
+	//  power up to 0x2E88, so we can use that to check the communications.
+    printf("Get Param value = %lx\n", GetParam(CONFIG));
+	if (GetParam(CONFIG) == 0x2E88){
+	    printf("good to go\n");
+	}else{
+		printf("Comm issue\n");
+	}
+
 }
 
 uint8_t Xfer(uint8_t data){
 	int ret;
-    uint8_t* rx;
+    uint8_t rx;
 	struct spi_ioc_transfer tr = {
-		.tx_buf = &data,
-		.rx_buf = rx,
+		.tx_buf = (unsigned long)&data,
+		.rx_buf = (unsigned long)&rx,
 		.len = 1,
 		.delay_usecs = delay,
 		.speed_hz = speed,
@@ -42,7 +88,7 @@ uint8_t Xfer(uint8_t data){
 	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
 	if (ret < 1)
 		pabort("can't send spi message");
-    return *rx;
+    return rx;
 }
 
 void SetParam(uint8_t param, unsigned long value){
@@ -255,4 +301,8 @@ unsigned long ParamHandler(uint8_t param, unsigned long value){
 	    break;
 	}
 	return ret_val;
+}
+
+int main(){
+    init();
 }

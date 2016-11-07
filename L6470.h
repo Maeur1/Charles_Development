@@ -222,5 +222,7 @@
 #define ACTION_COPY   0x01
 
 unsigned long ParamHandler(uint8_t param, unsigned long value);
+unsigned long GetParam(uint8_t param);
+void SetParam(uint8_t param, unsigned long value);
 
 #endif
