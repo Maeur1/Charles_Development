@@ -221,8 +221,63 @@
 #define ACTION_RESET  0x00
 #define ACTION_COPY   0x01
 
+void init();
+
+void setMicroSteps(int microSteps);
+void setCurrent(int current);
+void setMaxSpeed(int speed);
+void setMinSpeed(int speed);
+void setAcc(float acceleration);
+void setDec(float deceleration);
+void setOverCurrent(unsigned int ma_current);
+void setThresholdSpeed(float threshold);
+void setStallCurrent(float ma_current);
+
 unsigned long ParamHandler(uint8_t param, unsigned long value);
-unsigned long GetParam(uint8_t param);
+void SetLowSpeedOpt(bool enable);
+
+void run(uint8_t dir, float spd);
+void Step_Clock(uint8_t dir);
+
+void goHome();
+void setAsHome();
+
+void goMark();
+void move(long n_step);
+void goTo(long pos);
+void goTo_DIR(uint8_t dir, long pos);
+void goUntil(uint8_t act, uint8_t dir, unsigned long spd);
+
+bool isBusy();
+
+void releaseSW(uint8_t act, uint8_t dir);
+
+float getSpeed();
+long getPos();
+void setMark(bool currentPos, long value);
+
+
+void resetPos();
+void resetDev();
+void softStop();
+void hardStop();
+void softhiZ();
+void hardhiZ();
+int getStatus();
+
+long convert(unsigned long val);
+    
 void SetParam(uint8_t param, unsigned long value);
+unsigned long GetParam(uint8_t param);
+
+unsigned long AccCalc(float stepsPerSecPerSec);
+unsigned long DecCalc(float stepsPerSecPerSec);
+unsigned long MaxSpdCalc(float stepsPerSec);
+unsigned long MinSpdCalc(float stepsPerSec);
+unsigned long FSCalc(float stepsPerSec);
+unsigned long IntSpdCalc(float stepsPerSec);
+unsigned long SpdCalc(float stepsPerSec);
+unsigned long Param(unsigned long value, uint8_t bit_len);
+uint8_t Xfer(uint8_t data); 
 
 #endif
