@@ -91,9 +91,6 @@ void init(){
 	if (GetParam(CONFIG) != 0x2E88){
 		printf("Comm issue\n");
 	}
-
-    move(10000);
-    printf("Status = %x\n", GetParam(CONFIG));
 }
 
 bool isBusy(){
