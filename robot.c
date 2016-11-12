@@ -2,10 +2,13 @@
 
 #define WIDTH 160
 #define HEIGHT 135
-#define LEFT_FRONT_MOTOR 0
-#define RIGHT_FRONT_MOTOR 1
+
+#define LEFT_FRONT_MOTOR 1
+#define RIGHT_FRONT_MOTOR 0
 #define LEFT_BACK_MOTOR 2
 #define RIGHT_BACK_MOTOR 3
+
+#define ROTATION_SCALE 10.0
 
 extern int current_driver;
 
@@ -22,10 +25,8 @@ void turn_off_motors(){
 
 void left_front_motor(int speed){
     current_driver = LEFT_FRONT_MOTOR;
-    if(speed == 0){
-        return;
-    } else if (speed < 0){
-        run(FWD, -speed);
+    if (speed < 0){
+        run(REV, -speed);
     } else {
         run(FWD, speed);
     }
@@ -33,10 +34,8 @@ void left_front_motor(int speed){
 
 void right_front_motor(int speed){
     current_driver = RIGHT_FRONT_MOTOR;
-    if(speed == 0){
-        return;
-    } else if (speed < 0){
-        run(FWD, -speed);
+    if (speed < 0){
+        run(REV, -speed);
     } else {
         run(FWD, speed);
     }
@@ -44,10 +43,8 @@ void right_front_motor(int speed){
 
 void left_back_motor(int speed){
     current_driver = LEFT_BACK_MOTOR;
-    if(speed == 0){
-        return;
-    } else if (speed < 0){
-        run(FWD, -speed);
+    if (speed < 0){
+        run(REV, -speed);
     } else {
         run(FWD, speed);
     }
@@ -55,31 +52,29 @@ void left_back_motor(int speed){
 
 void right_back_motor(int speed){
     current_driver = RIGHT_BACK_MOTOR;
-    if(speed == 0){
-        return;
-    } else if (speed < 0){
-        run(FWD, -speed);
+    if (speed < 0){
+        run(REV, -speed);
     } else {
         run(FWD, speed);
     }
 }
 
 void robot_move(double x, double y, double rotation){
-    int leftfront = (y + x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
-    int rightfront = (y - x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
-    int leftback = (y - x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
-    int rightback = (y + x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
+    int leftfront = (int)(y + x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
+    int rightfront = (int)(y - x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
+    int leftback = (int)(y - x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
+    int rightback = (int)(y + x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
     left_front_motor(leftfront);
     right_front_motor(rightfront);
-    left_front_motor(leftback);
-    right_front_motor(rightback);
+    left_back_motor(leftback);
+    right_back_motor(rightback);
 }
 
 int main( int argc, char *argv[] ) {
    int sockfd, newsockfd, portno, clilen;
    char buffer[256];
    struct sockaddr_in serv_addr, cli_addr;
-   int  n;
+   int n;
    
    /* First call to socket() function */
    sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -103,7 +98,7 @@ int main( int argc, char *argv[] ) {
       exit(1);
    }
 
-   init();
+   init(4);
       
    /* Now start listening for the clients, here process will
       * go in sleep mode and will wait for the incoming connection
@@ -111,17 +106,14 @@ int main( int argc, char *argv[] ) {
    
    listen(sockfd,5);
    clilen = sizeof(cli_addr);
-   printf("IP Address of this machine: %d.%d.%d.%d\n",
-      (int)(cli_addr.sin_addr.s_addr&0xFF),
-      (int)((cli_addr.sin_addr.s_addr&0xFF00)>>8),
-      (int)((cli_addr.sin_addr.s_addr&0xFF0000)>>16),
-      (int)((cli_addr.sin_addr.s_addr&0xFF000000)>>24));
+   printf("IP Address of this machine: %s\n", inet_ntoa(gethostbyname("odroid.local")->h_addr_list[0]));
    
    while(1){
        /* Accept actual connection from the client */
        turn_off_motors();
        printf("Waiting on socket connection...\n");
        newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+       printf("Connected\n");
         
        if (newsockfd < 0) {
           perror("ERROR on accept");
@@ -139,7 +131,13 @@ int main( int argc, char *argv[] ) {
               perror("ERROR reading from socket");
               exit(1);
            }
-           printf("%d %d %d %d %d\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
+           int x = buffer[0] - 127;
+           int y = buffer[1] - 127;
+           double rotation = buffer[2] - 127;
+           rotation = -(rotation/127.0)*(2*3.141592653589);
+           double speed = buffer[4];
+           speed = 2*speed/255.0;
+           robot_move(x*speed, y*speed, rotation*speed/ROTATION_SCALE);
        }
    }
    return 0;
