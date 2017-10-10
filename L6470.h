@@ -294,4 +294,12 @@ unsigned long SpdCalc(float stepsPerSec);
 unsigned long Param(unsigned long value, uint8_t bit_len);
 uint8_t Xfer(uint8_t data); 
 
+void setRunKVAL(uint8_t value);
+void setAccKVAL(uint8_t value);
+void setDecKVAL(uint8_t value);
+void setHoldKVAL(uint8_t value);
+void setPWMFreq(int divisor, int multiplier);
+void setSlewRate(int slewRate);
+void setOCShutdown(int OCShutdown);
+void setVoltageComp(int vsCompMode);
 #endif

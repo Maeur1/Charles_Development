@@ -14,7 +14,7 @@ static int fd;
 static int num_of_drivers;
 static const char *device = "/dev/spidev0.0";
 static uint8_t bits = 8;
-static uint32_t speed = 5000000;
+static uint32_t speed = 1000000;
 
 int current_driver = 0;
 
@@ -91,7 +91,7 @@ void setMicroSteps(int microSteps){
 	  	microSteps = microSteps >> 1;
 	  }
 	  
-	  SetParam(STEP_MODE, !SYNC_EN | stepVal | SYNC_SEL_1);
+	 SetParam(STEP_MODE, !SYNC_EN | stepVal | SYNC_SEL_1);
 }
 
 void setThresholdSpeed(float thresholdSpeed){
@@ -430,6 +430,51 @@ unsigned long SpdCalc(float stepsPerSec){
 	float temp = stepsPerSec * 67.106;
 	if( ((unsigned long)(temp)) > 0x000FFFFF) return 0x000FFFFF;
 	else return (unsigned long)temp;
+}
+
+void setRunKVAL(uint8_t value){
+	SetParam(KVAL_RUN, value);
+}
+
+void setAccKVAL(uint8_t value){
+	SetParam(KVAL_ACC, value);
+}
+
+void setDecKVAL(uint8_t value){
+	SetParam(KVAL_DEC, value);
+}
+
+void setHoldKVAL(uint8_t value){
+	SetParam(KVAL_HOLD, value);
+}
+
+void setPWMFreq(int divisor, int multiplier){
+	unsigned long configVal = GetParam(CONFIG);
+	configVal &= ~(0xE000);
+	configVal &= ~(0x1C00);
+	configVal |= ((0xE000 & divisor) |(0x1C00&multiplier));
+	SetParam(CONFIG, configVal);
+}
+
+void setSlewRate(int slewRate){
+	unsigned long configVal = GetParam(CONFIG);
+	configVal &= ~(0x0300);
+	configVal |= (0x0300|slewRate);
+	SetParam(CONFIG, configVal);
+}
+
+void setOCShutdown(int OCShutdown){
+	unsigned long configVal = GetParam(CONFIG);
+	configVal &= ~(0x0080);
+	configVal |= (0x0080&OCShutdown);
+	SetParam(CONFIG, configVal);
+}
+
+void setVoltageComp(int vsCompMode){
+	unsigned long configVal = GetParam(CONFIG);
+	configVal &= ~(0x0020);
+	configVal |= (0x0020&vsCompMode);
+	SetParam(CONFIG, configVal);
 }
 
 uint8_t Xfer(uint8_t data){
