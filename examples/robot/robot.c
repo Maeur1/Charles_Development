@@ -3,10 +3,10 @@
 #define WIDTH 160
 #define HEIGHT 135
 
-#define LEFT_FRONT_MOTOR 1
-#define RIGHT_FRONT_MOTOR 0
-#define LEFT_BACK_MOTOR 2
-#define RIGHT_BACK_MOTOR 3
+#define LEFT_FRONT_MOTOR 2
+#define RIGHT_FRONT_MOTOR 3
+#define LEFT_BACK_MOTOR 1
+#define RIGHT_BACK_MOTOR 0
 
 #define ROTATION_SCALE 10.0
 
@@ -62,8 +62,8 @@ void right_back_motor(int speed){
 void robot_move(double x, double y, double rotation){
     int leftfront = (int)(y + x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
     int rightfront = (int)(y - x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
-    int leftback = (int)(y - x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
-    int rightback = (int)(y + x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
+    int leftback = (int)(-y - x - rotation*(WIDTH/2.0 + HEIGHT/2.0));
+    int rightback = (int)(-y + x + rotation*(WIDTH/2.0 + HEIGHT/2.0));
     left_front_motor(leftfront);
     right_front_motor(rightfront);
     left_back_motor(leftback);
